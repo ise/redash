@@ -2,16 +2,18 @@
 VERSION=$(jq -r .version package.json)
 VERSION_TAG=$VERSION.b$CIRCLE_BUILD_NUM
 
-docker login -u $DOCKER_USER -p $DOCKER_PASS
+# docker login -u $DOCKER_USER -p $DOCKER_PASS
+# https://docs.github.com/ja/packages/working-with-a-github-packages-registry/working-with-the-container-registry
+echo $CR_PAT | docker login ghcr.io -u $GH_USER --password-stdin
 
 if [ $CIRCLE_BRANCH = master ] || [ $CIRCLE_BRANCH = preview-image ]
 then
-    docker build --build-arg skip_dev_deps=true -t redash/redash:preview -t redash/preview:$VERSION_TAG .
-    docker push redash/redash:preview
-    docker push redash/preview:$VERSION_TAG
+    docker build --build-arg skip_dev_deps=true -t ghcr.io/ise/redash:preview -t ghcr.io/ise/redash/preview:$VERSION_TAG .
+    docker push ghcr.io/ise/redash:preview
+    docker push ghcr.io/ise/preview:$VERSION_TAG
 else
-    docker build --build-arg skip_dev_deps=true -t redash/redash:$VERSION_TAG .
-    docker push redash/redash:$VERSION_TAG
+    docker build --build-arg skip_dev_deps=true -t ghcr.io/ise/redash:$VERSION_TAG .
+    docker push ghcr.io/ise/redash:$VERSION_TAG
 fi
 
 echo "Built: $VERSION_TAG"
